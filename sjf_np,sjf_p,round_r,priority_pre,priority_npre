@@ -1,0 +1,243 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+#define MAX_PROC 10
+
+struct Proc {
+    int pid;
+    int arrv;
+    int brst;
+    int prio;
+    int remt;
+    int turn;
+    int wait;
+};
+
+void sjf_np(struct Proc procs[], int n) {
+    int i, j, cnt = 0, m;
+    for (i = 0; i < n; i++) {
+        if (procs[i].arrv == 0) {
+            cnt++;
+        }
+    }
+    
+    if (cnt == n || cnt == 1) {
+        if (cnt == n) {
+            for (i = 0; i < n - 1; i++) {
+                for (j = 0; j < n - i - 1; j++) {
+                    if (procs[j].brst > procs[j + 1].brst) {
+                        struct Proc temp = procs[j];
+                        procs[j] = procs[j + 1];
+                        procs[j + 1] = temp;
+                    }
+                }
+            }
+        } else {
+            for (i = 1; i < n - 1; i++) {
+                for (j = 1; j <= n - i - 1; j++) {
+                    if (procs[j].brst > procs[j + 1].brst) {
+                        struct Proc temp = procs[j];
+                        procs[j] = procs[j + 1];
+                        procs[j + 1] = temp;
+                    }
+                }
+            }
+        }
+    }
+
+    int total_time = 0;
+    double total_turnaround_time = 0;
+    double total_waiting_time = 0;
+
+    for (i = 0; i < n; i++) {
+        total_time += procs[i].brst;
+        procs[i].turn = total_time - procs[i].arrv;
+        procs[i].wait = procs[i].turn - procs[i].brst;
+
+        total_turnaround_time += procs[i].turn;
+        total_waiting_time += procs[i].wait;
+    }
+
+    printf("Proc\tTurnaround Time\tWaiting Time\n");
+    for (i = 0; i < n; i++) {
+        printf("%d\t%d\t\t%d\n", procs[i].pid, procs[i].turn, procs[i].wait);
+    }
+
+    printf("Avg Turnaround Time: %.2f\n", total_turnaround_time / n);
+    printf("Avg Waiting Time: %.2f\n", total_waiting_time / n);
+}
+
+void sjf_pr(struct Proc procs[], int n) {
+    int total_time = 0, i;
+    int completed = 0;
+
+    while (completed < n) {
+        int shortest_burst = -1;
+        int next_proc = -1;
+
+        for (i = 0; i < n; i++) {
+            if (procs[i].arrv <= total_time && procs[i].remt > 0) {
+                if (shortest_burst == -1 || procs[i].remt < shortest_burst) {
+                    shortest_burst = procs[i].remt;
+                    next_proc = i;
+                }
+            }
+        }
+
+        if (next_proc == -1) {
+            total_time++;
+            continue;
+        }
+
+        procs[next_proc].remt--;
+        total_time++;
+
+        if (procs[next_proc].remt == 0) {
+            completed++;
+            procs[next_proc].turn = total_time - procs[next_proc].arrv;
+            procs[next_proc].wait = procs[next_proc].turn - procs[next_proc].brst;
+        }
+    }
+
+    double total_turnaround_time = 0;
+    double total_waiting_time = 0;
+
+    printf("Proc\tTurnaround Time\tWaiting Time\n");
+    for (i = 0; i < n; i++) {
+        total_turnaround_time += procs[i].turn;
+        total_waiting_time += procs[i].wait;
+        printf("%d\t%d\t\t%d\n", procs[i].pid, procs[i].turn, procs[i].wait);
+    }
+
+    printf("Avg Turnaround Time: %.2f\n", total_turnaround_time / n);
+    printf("Avg Waiting Time: %.2f\n", total_waiting_time / n);
+}
+
+void prio_np(struct Proc procs[], int n) {
+    int i, j;
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < n - i - 1; j++) {
+            if (procs[j].prio > procs[j + 1].prio) {
+                struct Proc temp = procs[j];
+                procs[j] = procs[j + 1];
+                procs[j + 1] = temp;
+            }
+        }
+    }
+
+    int total_time = 0;
+    double total_turnaround_time = 0;
+    double total_waiting_time = 0;
+
+    for (i = 0; i < n; i++) {
+        total_time += procs[i].brst;
+        procs[i].turn = total_time - procs[i].arrv;
+        procs[i].wait = procs[i].turn - procs[i].brst;
+
+        total_turnaround_time += procs[i].turn;
+        total_waiting_time += procs[i].wait;
+    }
+
+    printf("Proc\tTurnaround Time\tWaiting Time\n");
+    for (i = 0; i < n; i++) {
+        printf("%d\t%d\t\t%d\n", procs[i].pid, procs[i].turn, procs[i].wait);
+    }
+
+    printf("Avg Turnaround Time: %.2f\n", total_turnaround_time / n);
+    printf("Avg Waiting Time: %.2f\n", total_waiting_time / n);
+}
+
+void prio_pr(struct Proc procs[], int n) {
+    int total_time = 0, i;
+    int completed = 0;
+
+    while (completed < n) {
+        int highest_priority = -1;
+        int next_proc = -1;
+
+        for (i = 0; i < n; i++) {
+            if (procs[i].arrv <= total_time && procs[i].remt > 0) {
+                if (highest_priority == -1 || procs[i].prio < highest_priority) {
+                    highest_priority = procs[i].prio;
+                    next_proc = i;
+                }
+            }
+        }
+
+        if (next_proc == -1) {
+            total_time++;
+            continue;
+        }
+
+        procs[next_proc].remt--;
+        total_time++;
+
+        if (procs[next_proc].remt == 0) {
+            completed++;
+            procs[next_proc].turn = total_time - procs[next_proc].arrv;
+            procs[next_proc].wait = procs[next_proc].turn - procs[next_proc].brst;
+        }
+    }
+
+    double total_turnaround_time = 0;
+    double total_waiting_time = 0;
+
+    printf("Proc\tTurnaround Time\tWaiting Time\n");
+    for (i = 0; i < n; i++) {
+        total_turnaround_time += procs[i].turn;
+        total_waiting_time += procs[i].wait;
+        printf("%d\t%d\t\t%d\n", procs[i].pid, procs[i].turn, procs[i].wait);
+    }
+
+    printf("Avg Turnaround Time: %.2f\n", total_turnaround_time / n);
+    printf("Avg Waiting Time: %.2f\n", total_waiting_time / n);
+}
+
+int main() {
+    int n, i, ch;
+    struct Proc procs[MAX_PROC];
+
+    printf("Enter the number of processes (max %d): ", MAX_PROC);
+    scanf("%d", &n);
+
+    printf("Enter process details:\n");
+    for (i = 0; i < n; i++) {
+        printf("Process %d:\n", i + 1);
+        printf("PID: ");
+        scanf("%d", &procs[i].pid);
+        printf("Arrival Time: ");
+        scanf("%d", &procs[i].arrv);
+        printf("Burst Time: ");
+        scanf("%d", &procs[i].brst);
+        printf("Priority: ");
+        scanf("%d", &procs[i].prio);
+        procs[i].remt = procs[i].brst;
+        printf("\n");
+    }
+
+    printf("1. SJF (Non-Preemptive)\n");
+    printf("2. SJF (Preemptive)\n");
+    printf("3. Priority (Non-Preemptive)\n");
+    printf("4. Priority (Preemptive)\n");
+    printf("Enter your choice: ");
+    scanf("%d", &ch);
+
+    switch (ch) {
+        case 1:
+            sjf_np(procs, n);
+            break;
+        case 2:
+            sjf_pr(procs, n);
+            break;
+        case 3:
+            prio_np(procs, n);
+            break;
+        case 4:
+            prio_pr(procs, n);
+            break;
+        default:
+            printf("Invalid choice\n");
+    }
+
+    return 0;
+}
