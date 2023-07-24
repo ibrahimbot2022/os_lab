@@ -1,0 +1,49 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+int main() {
+    srand(time(0));
+
+    int numbers[5];
+    int i;
+
+    // Get input from the user for 5 numbers
+    printf("Enter 5 numbers between 1 and 10:\n");
+    for (i = 0; i < 5; i++) {
+        scanf("%d", &numbers[i]);
+    }
+
+    printf("Initial Numbers: ");
+    for (i = 0; i < 5; i++) {
+        printf("%d ", numbers[i]);
+    }
+    printf("\n");
+
+    int remaining_count = 5;
+
+    while (remaining_count > 0) {
+        // Randomly select an index until we find a non-zero number
+        int selected_index;
+        do {
+            selected_index = rand() % 5;
+        } while (numbers[selected_index] == 0);
+
+        // Decrement the selected number
+        numbers[selected_index]--;
+        printf("Decrementing number at index %d: ", selected_index);
+        for (i = 0; i < 5; i++) {
+            printf("%d ", numbers[i]);
+        }
+        printf("\n");
+
+        // Update the remaining count
+        if (numbers[selected_index] == 0) {
+            remaining_count--;
+        }
+    }
+
+    printf("All numbers reached 0.\n");
+
+    return 0;
+}
